@@ -66,6 +66,7 @@ interface SwapAmount {
     amount1Out: ethers.BigNumber
 }
 
+// parses logs into Trade structures
 async function parseLogs(decimals0: number, decimals1: number, logs: ethers.providers.Log[], dex: Dex): Promise<Trade[]> {
     let result: Trade[] = [];
     let blockInfo: ethers.providers.Block[] = [];
@@ -118,6 +119,7 @@ async function parseLogs(decimals0: number, decimals1: number, logs: ethers.prov
     return result;
 }
 
+// parses all trades from (latestBlock - blockAmount) until latestBlock
 async function pullAndParse(latestBlock: number, blockAmount: number): Promise<Trade[]> {
     const logsUniswap: ethers.providers.Log[] = (await getPoolLogs("0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852", latestBlock, blockAmount));
     const logsSushiswap = await getPoolLogs("0x06da0fd433c1a5d7a4faa01111c044910a184553", latestBlock, blockAmount);
@@ -126,6 +128,7 @@ async function pullAndParse(latestBlock: number, blockAmount: number): Promise<T
         .concat(await parseLogs(18, 6, logsSushiswap, Dex.Sushiswap));
 }
 
+// prints trades, sorting them by side (selling or buying)
 async function printTradesInBlock(latestBlock: number) {
     const trades: Trade[] = await pullAndParse(latestBlock, 1);
     console.log("BUYS");
@@ -134,10 +137,7 @@ async function printTradesInBlock(latestBlock: number) {
     console.log(trades.filter((x) => x.side == TradeSide.Sell));
 }
 
-console.log('app loaded');
-
 export {
-    Dex,
     pullAndParse,
     printTradesInBlock
 }
